@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ごはんコンパス</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🧭 ごはんコンパス</h1>
+
+        <!-- 目標設定カード -->
+        <div class="card">
+            <h2>目標設定</h2>
+            <div class="input-group">
+                <label for="totalCalories">1日の目標総摂取カロリー (kcal)</label>
+                <input type="number" id="totalCalories" placeholder="例: 2000">
+            </div>
+            <label>目標PFCバランス (%)</label>
+            <div class="preset-buttons">
+                <button class="preset-btn" id="presetPFCBalanced">脂質制限 (3:1:6)</button>
+                <button class="preset-btn" id="presetPFCLowCarb">糖質制限 (3:5:2)</button>
+            </div>
+            <div class="input-grid">
+                <div class="input-group"><input type="number" id="targetProtein" placeholder="P: 30"></div>
+                <div class="input-group"><input type="number" id="targetFat" placeholder="F: 20"></div>
+                <div class="input-group"><input type="number" id="targetCarbs" placeholder="C: 50"></div>
+            </div>
+        </div>
+
+        <!-- 詳細オプション -->
+        <details class="details-card">
+            <summary>詳細オプション: 1日の食事バランスを調整</summary>
+            <div class="distribution-settings">
+                <div class="preset-buttons">
+                    <button class="preset-btn small" id="presetDistEven">均等</button>
+                    <button class="preset-btn small" id="presetDistMorning">朝しっかり</button>
+                    <button class="preset-btn small" id="presetDistLunch">昼しっかり</button>
+                    <button class="preset-btn small" id="presetDistDinner">夜しっかり</button>
+                </div>
+				<div class="slider-group">
+				   <label>朝食 (自動調整): <span id="distMorningVal">33.3</span>%</label>
+				   <input type="range" id="distMorningSlider" disabled>
+			   </div>
+                <div class="slider-group">
+                    <label>昼食: <span id="distLunchVal">33.3</span>%</label>
+                    <input type="range" id="distLunchSlider" min="0" max="100" step="1">
+                </div>
+                <div class="slider-group">
+                    <label>夕食: <span id="distDinnerVal">33.4</span>%</label>
+                    <input type="range" id="distDinnerSlider" min="0" max="100" step="1">
+                </div>
+            </div>
+        </details>
+
+        <button id="calculateBtn">コンパスを動かす！ (計算)</button>
+
+        <!-- 目標摂取量の目安カード -->
+        <div class="card" id="guideline-section">
+            <h2>摂取量の目安</h2>
+            <div class="guideline-grid">
+                <div class="guideline-title">1日 合計</div>
+                <div class="result-item">P: <span id="daily-p">0</span>g</div>
+                <div class="result-item">F: <span id="daily-f">0</span>g</div>
+                <div class="result-item">C: <span id="daily-c">0</span>g</div>
+
+                <div class="guideline-title">朝食</div>
+                <div class="result-item">P: <span id="m-p">0</span>g (<span class="food-icon">🐓</span><span id="m-food-p">0</span>g)</div>
+                <div class="result-item">F: <span id="m-f">0</span>g (<span class="food-icon">🫒</span><span id="m-food-f">0</span>g)</div>
+                <div class="result-item">C: <span id="m-c">0</span>g (<span class="food-icon">🍚</span><span id="m-food-c">0</span>g)</div>
+
+                <div class="guideline-title">昼食</div>
+                <div class="result-item">P: <span id="l-p">0</span>g (<span class="food-icon">🐓</span><span id="l-food-p">0</span>g)</div>
+                <div class="result-item">F: <span id="l-f">0</span>g (<span class="food-icon">🫒</span><span id="l-food-f">0</span>g)</div>
+                <div class="result-item">C: <span id="l-c">0</span>g (<span class="food-icon">🍚</span><span id="l-food-c">0</span>g)</div>
+
+                <div class="guideline-title">夕食</div>
+                <div class="result-item">P: <span id="d-p">0</span>g (<span class="food-icon">🐓</span><span id="d-food-p">0</span>g)</div>
+                <div class="result-item">F: <span id="d-f">0</span>g (<span class="food-icon">🫒</span><span id="d-food-f">0</span>g)</div>
+                <div class="result-item">C: <span id="d-c">0</span>g (<span class="food-icon">🍚</span><span id="d-food-c">0</span>g)</div>
+            </div>
+            <div class="footnote">※PFCグラム数と、( )内は食材換算の目安です。<br>🐓鶏むね肉(皮なし) 🫒オリーブオイル 🍚白米(炊飯後)</div>
+        </div>
+    </div>
+</body>
+</html>
