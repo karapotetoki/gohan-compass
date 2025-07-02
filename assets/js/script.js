@@ -1,10 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM要素の取得 ---
+    // === タブ切り替えロジック ===
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const targetTab = link.dataset.tab;
+
+            // すべてのタブとコンテンツから 'active' クラスを削除
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+
+            // クリックされたタブと対応するコンテンツに 'active' クラスを追加
+            link.classList.add('active');
+            document.getElementById(targetTab).classList.add('active');
+        });
+    });
+
+    // 「目標をたてる」機能関連
     const totalCaloriesInput = document.getElementById('totalCalories');
     const targetPInput = document.getElementById('targetProtein');
     const targetFInput = document.getElementById('targetFat');
     const targetCInput = document.getElementById('targetCarbs');
-    const calculateBtn = document.getElementById('calculateBtn');
+    const plannerCalculateBtn = document.getElementById('planner-calculateBtn');
     const presetPFCBalancedBtn = document.getElementById('presetPFCBalanced');
     const presetPFCLowCarbBtn = document.getElementById('presetPFCLowCarb');
     const distMorningSlider = document.getElementById('distMorningSlider');
@@ -18,9 +36,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const presetDistLunchBtn = document.getElementById('presetDistLunch');
     const presetDistDinnerBtn = document.getElementById('presetDistDinner');
 
-    const G_PER_PROTEIN = 100 / 23, G_PER_FAT = 1, G_PER_CARBS = 100 / 37;
+    // 「ごはんをチェック」機能関連
+    const analyzerCalculateBtn = document.getElementById('analyzer-calculateBtn');
+    const intakeP = document.getElementById('intakeProtein');
+    const intakeF = document.getElementById('intakeFat');
+    const intakeC = document.getElementById('intakeCarbs');
+    const analyzerTotalCaloriesEl = document.getElementById('analyzer-totalCalories');
+    const analyzerPfcRatioEl = document.getElementById('analyzer-pfcRatio');
 
-    calculateBtn.addEventListener('click', calculateGuidelines);
+    // --- 食材換算の基準値 ---
+    const G_PER_PROTEIN = 100 / 23; // 鶏むね肉 100g中 P:23g
+    const G_PER_FAT = 1;             // オリーブオイル 100g中 F:100g
+    const G_PER_CARBS = 100 / 37;    // 白米(炊飯後) 100g中 C:37g
+
+    // =======================================================
+    // 「目標をたてる」機能
+    // =======================================================
+
+    plannerCalculateBtn.addEventListener('click', calculateGuidelines);
     presetPFCBalancedBtn.addEventListener('click', () => setTargetPFC(30, 10, 60));
     presetPFCLowCarbBtn.addEventListener('click', () => setTargetPFC(30, 50, 20));
     presetDistEvenBtn.addEventListener('click', () => setDistribution(33.3, 33.3));
@@ -28,14 +61,11 @@ document.addEventListener('DOMContentLoaded', () => {
     presetDistLunchBtn.addEventListener('click', () => setDistribution(40, 30));
     presetDistDinnerBtn.addEventListener('click', () => setDistribution(30, 40));
 
-    const allInputs = [totalCaloriesInput, targetPInput, targetFInput, targetCInput, distLunchSlider, distDinnerSlider];
-    allInputs.forEach(input => input.addEventListener('input', saveSettings));
+    const plannerInputs = [totalCaloriesInput, targetPInput, targetFInput, targetCInput, distLunchSlider, distDinnerSlider];
+    plannerInputs.forEach(input => input.addEventListener('input', saveSettings));
 
     distLunchSlider.addEventListener('input', (e) => updateDistribution(e));
     distDinnerSlider.addEventListener('input', (e) => updateDistribution(e));
-
-    loadSettings();
-    updateDistribution();
 
     function saveSettings() {
         const settings = {
@@ -106,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             f: (totalCalories * (fRatio / 100)) / 9,
             c: (totalCalories * (cRatio / 100)) / 4
         };
-        updateDisplay('daily', dailyGrams);
+        updatePlannerDisplay('daily', dailyGrams);
 
         const dist = {
             m: parseFloat(distMorningSlider.value) / 100,
@@ -117,11 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ['m', 'l', 'd'].forEach(type => {
             const mealGrams = { p: dailyGrams.p * dist[type], f: dailyGrams.f * dist[type], c: dailyGrams.c * dist[type] };
             const foodGrams = { p: mealGrams.p * G_PER_PROTEIN, f: mealGrams.f * G_PER_FAT, c: mealGrams.c * G_PER_CARBS };
-            updateDisplay(type, mealGrams, foodGrams);
+            updatePlannerDisplay(type, mealGrams, foodGrams);
         });
     }
 
-    function updateDisplay(prefix, pfcGrams, foodGrams = null) {
+    function updatePlannerDisplay(prefix, pfcGrams, foodGrams = null) {
         document.getElementById(`${prefix}-p`).textContent = pfcGrams.p.toFixed(1);
         document.getElementById(`${prefix}-f`).textContent = pfcGrams.f.toFixed(1);
         document.getElementById(`${prefix}-c`).textContent = pfcGrams.c.toFixed(1);
@@ -132,4 +162,37 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(`${prefix}-food-c`).textContent = foodGrams.c.toFixed(1);
         }
     }
+
+
+    // =======================================================
+    // 「ごはんをチェック」機能
+    // =======================================================
+    analyzerCalculateBtn.addEventListener('click', () => {
+        const pGrams = parseFloat(intakeP.value) || 0;
+        const fGrams = parseFloat(intakeF.value) || 0;
+        const cGrams = parseFloat(intakeC.value) || 0;
+
+        const pCals = pGrams * 4;
+        const fCals = fGrams * 9;
+        const cCals = cGrams * 4;
+
+        const totalCals = pCals + fCals + cCals;
+
+        if (totalCals === 0) {
+            analyzerTotalCaloriesEl.textContent = '0';
+            analyzerPfcRatioEl.textContent = 'P:0% F:0% C:0%';
+            return;
+        }
+
+        const pRatio = (pCals / totalCals) * 100;
+        const fRatio = (fCals / totalCals) * 100;
+        const cRatio = (cCals / totalCals) * 100;
+        
+        analyzerTotalCaloriesEl.textContent = totalCals.toFixed(1);
+        analyzerPfcRatioEl.textContent = `P:${pRatio.toFixed(1)}% F:${fRatio.toFixed(1)}% C:${cRatio.toFixed(1)}%`;
+    });
+
+
+    loadSettings();
+    updateDistribution();
 });
